@@ -1,2 +1,4 @@
 console.log
 __pycache__/
+.python-version
+price_data.db
