@@ -1,5 +1,3 @@
-cd /Users/yuji/Documents/datastore-for-tradeAI
-
-# echo $(python --version)
+cd /Users/yuji/Documents/cryptowatch-datastore
 
 /Users/yuji/.pyenv/shims/python3 ./main.py

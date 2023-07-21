@@ -1,13 +1,29 @@
 import requests
 import sqlite3
-
+import traceback
 import logging
-formatter = '%(asctime)s : %(levelname)s : %(message)s'
-logging.basicConfig(format=formatter, level=logging.INFO)
-logger = logging.getLogger(__name__)
-handler = logging.FileHandler('console.log')
-handler.setFormatter(logging.Formatter(formatter))
-logger.addHandler(handler)
+import logging.handlers
+from config import DATABASE_URL, EMAIL_ADDR, EMAIL_PASS
+
+def setup_logger():
+
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    # handler = logging.FileHandler('logs/console.log')
+    handler = logging.handlers.SMTPHandler(
+        mailhost=("smtp.gmail.com", 587),
+        fromaddr=EMAIL_ADDR,
+        toaddrs=[EMAIL_ADDR],
+        subject="Cryptowatch data gathering",
+        credentials=(EMAIL_ADDR, EMAIL_PASS),
+        secure=()
+    )
+
+    formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    return logger
 
 
 def get_price_data(chart_sec, pair, before=0, after=0):
@@ -18,13 +34,14 @@ def get_price_data(chart_sec, pair, before=0, after=0):
     if after != 0:
         params["after"] = after
 
-    URL = f"https://api.cryptowat.ch/markets/bitflyer/{pair}/ohlc"
-    response = requests.get(URL, params)
+    endpoint = f"https://api.cryptowat.ch/markets/bitflyer/{pair}/ohlc"
+    response = requests.get(endpoint, params)
 
     if response.status_code == 200:
         return response.json()
     else:
         return None
+
     
 def create_table(connection):
 
@@ -45,6 +62,7 @@ def create_table(connection):
     ''')
     connection.commit()
 
+
 def save_to_sqlite(data, chart_sec, pair, connection):
 
     cursor = connection.cursor()
@@ -59,23 +77,29 @@ def save_to_sqlite(data, chart_sec, pair, connection):
 
     return inserted_nums
 
-def fetch_and_save_data():
 
-    after = 1483228800
-    chart_sec = 60
-    pairs = ["btcjpy", "btcfxjpy"]
-    db_file = "price_data.db"
+def fetch_and_save_data(logger):
 
-    for pair in pairs:
-        data = get_price_data(chart_sec, pair, after=after)
-        if data:
-            with sqlite3.connect(db_file) as connection:
-                create_table(connection)
-                inserted_nums = save_to_sqlite(data, chart_sec, pair, connection)
-                logger.info(f"Inserted {inserted_nums} new rows for {pair} to {db_file}")
-        else:
-            logger.info(f"Failed to fetch price data for {pair}")
+    try:
+        after = 1483228800
+        chart_sec = 60
+        pairs = ["btcjpy", "btcfxjpy"]
+
+        for pair in pairs:
+            data = get_price_data(chart_sec, pair, after=after)
+            if data:
+                with sqlite3.connect(DATABASE_URL) as connection:
+                    create_table(connection)
+                    inserted_nums = save_to_sqlite(data, chart_sec, pair, connection)
+                    logger.info(f"Inserted {inserted_nums} new rows for {pair} to {DATABASE_URL}")
+            else:
+                logger.info(f"Failed to fetch price data for {pair}")
+
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+        logger.error(traceback.format_exc())
+
 
 if __name__ == "__main__":
-
-    fetch_and_save_data()
+    logger = setup_logger()
+    fetch_and_save_data(logger)
