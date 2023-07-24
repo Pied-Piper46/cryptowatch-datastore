@@ -1,8 +1,8 @@
 FROM python:3.9.10-slim-buster
 
-WORKDIR /app
+WORKDIR /data_collecter_app
 
-ADD . /app
+ADD . /data_collecter_app
 
 RUN apt-get update && apt-get -y install cron
 RUN pip install --no-cache-dir -r requirements.txt
