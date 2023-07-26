@@ -84,14 +84,15 @@ def fetch_and_save_data(logger):
         after = 1483228800
         chart_sec = 60
         pairs = ["btcjpy", "btcfxjpy"]
+        db_path = "../.." + DATABASE_URL
 
         for pair in pairs:
             data = get_price_data(chart_sec, pair, after=after)
             if data:
-                with sqlite3.connect(DATABASE_URL) as connection:
+                with sqlite3.connect(db_path) as connection:
                     create_table(connection)
                     inserted_nums = save_to_sqlite(data, chart_sec, pair, connection)
-                    logger.info(f"Inserted {inserted_nums} new rows for {pair} to {DATABASE_URL}")
+                    logger.info(f"Inserted {inserted_nums} new rows for {pair} to {db_path}")
             else:
                 logger.info(f"Failed to fetch price data for {pair}")
 
