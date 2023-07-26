@@ -1,13 +1,13 @@
 package model
 
 type PriceData struct {
-	ID int
-	CloseTime int
-	ChartSec int
-	Pair string
-	Open float64
-	High float64
-	Low float64
-	Close float64
-	Volume float64
+	ID int `gorm:"column:id;primary_key" json:"id"`
+	CloseTime int `gorm:"column:close_time" json:"close_time"`
+	ChartSec int `gorm:"column:chart_sec" json:"chart_sec"`
+	Pair string `gorm:"column:pair" json:"pair"`
+	Open float64 `gorm:"column:open" json:"open"`
+	High float64 `gorm:"column:high" json:"high"`
+	Low float64 `gorm:"column:low" json:"low"`
+	Close float64 `gorm:"column:close" json:"close"`
+	Volume float64 `gorm:"column:volume" json:"volume"`
 }
