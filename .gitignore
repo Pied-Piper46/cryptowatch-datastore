@@ -1,4 +1,6 @@
-console.log
 __pycache__/
+.DS_Store
 .python-version
-price_data.db
+logs/
+data/
+.env

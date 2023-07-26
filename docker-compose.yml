@@ -1,0 +1,22 @@
+version: '3'
+services:
+  data_collecter:
+    build: ./data_collecter
+    volumes:
+      - type: bind
+        source: "./data"
+        target: "/data"
+      - type: bind
+        source: "./.env"
+        target: "/.env"
+  api_server:
+    build: ./api_server
+    ports:
+      - "8080:8080"
+    volumes:
+      - type: bind
+        source: "./data"
+        target: "/data"
+      - type: bind
+        source: "./.env"
+        target: "/.env"
